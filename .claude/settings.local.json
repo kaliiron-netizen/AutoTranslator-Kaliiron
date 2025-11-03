@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(nul)",
+      "Bash(dir:*)",
+      "WebSearch",
+      "Bash(./gradlew build)",
+      "Bash(cat:*)",
+      "Bash(del \"C:\\Users\\rkush\\Desktop\\work\\piglin\\AutoTranslator\\src\\main\\java\\com\\pocky\\autotranslator\\translation\\DeepLTranslateClient.java\")",
+      "Bash(del \"C:\\Users\\rkush\\Desktop\\work\\piglin\\AutoTranslator\\src\\main\\java\\com\\pocky\\autotranslator\\translation\\GoogleTranslateClient.java\")",
+      "Bash(del \"C:\\Users\\rkush\\Desktop\\work\\piglin\\AutoTranslator\\src\\main\\java\\com\\pocky\\autotranslator\\translation\\TranslationService.java\")",
+      "Bash(del \"C:\\Users\\rkush\\Desktop\\work\\piglin\\AutoTranslator\\src\\main\\java\\com\\pocky\\autotranslator\\translation\\MinecraftTerminology.java\")",
+      "Bash(del \"C:\\Users\\rkush\\Desktop\\work\\piglin\\AutoTranslator\\src\\main\\java\\com\\pocky\\autotranslator\\translation\\GrammarCorrector.java\")",
+      "Bash(findstr:*)",
+      "Bash(del \"run\\mods\\chunk_scrolls-3.0.0-neoforge-1.21.1.jar\")",
+      "Bash(./gradlew clean build:*)",
+      "Bash(./gradlew:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
