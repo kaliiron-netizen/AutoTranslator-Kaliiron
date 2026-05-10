@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Generates a resource pack with translated language files.
@@ -21,11 +22,10 @@ public class ResourcePackGenerator {
     private final String targetLanguage;
     private final String targetLanguageFile;
 
-    public ResourcePackGenerator(Path gameDirectory, String targetLanguage) {
+    public ResourcePackGenerator(Path gameDirectory, String minecraftLanguage) {
         this.resourcePackPath = gameDirectory.resolve("resourcepacks").resolve("AutoTranslator");
-        this.targetLanguage = targetLanguage;
-        // Convert "ru" to "ru_ru" for Minecraft language file format
-        this.targetLanguageFile = targetLanguage + "_" + targetLanguage;
+        this.targetLanguage = minecraftLanguage;
+        this.targetLanguageFile = minecraftLanguage;
     }
 
     /**
@@ -85,7 +85,7 @@ public class ResourcePackGenerator {
         Files.createDirectories(langDir);
 
         // Create language file (e.g., ru_ru.json)
-        Path langFile = langDir.resolve(targetLanguageFile + ".json");
+        Path langFile = langDir.resolve(this.targetLanguageFile + ".json");
 
         // Convert translations to JSON
         JsonObject translationJson = new JsonObject();
@@ -120,15 +120,17 @@ public class ResourcePackGenerator {
      */
     private void deleteDirectory(Path directory) throws IOException {
         if (Files.exists(directory)) {
-            Files.walk(directory)
-                    .sorted((a, b) -> -a.compareTo(b)) // Delete files before directories
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException e) {
-                            AutoTranslatorMod.LOGGER.error("Failed to delete: {}", path, e);
-                        }
-                    });
+            // Sử dụng try-with-resources để tự động đóng Stream
+            try (Stream<Path> paths = Files.walk(directory)) {
+                    paths.sorted((a, b) -> -a.compareTo(b)) // Delete files before directories
+                        .forEach(path -> {
+                            try {
+                                Files.delete(path);
+                            } catch (IOException e) {
+                                AutoTranslatorMod.LOGGER.error("Failed to delete: {}", path, e);
+                            }
+                        });
+            }
         }
     }
 
