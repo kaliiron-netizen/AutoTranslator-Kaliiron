@@ -100,35 +100,36 @@ public class TranslationService {
                 entries.size(), batches.size(), THREAD_POOL_SIZE);
 
         // Process batches in parallel
-        ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-        List<Future<Map<String, String>>> futures = new ArrayList<>();
+        try (ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE)) {
+            List<Future<Map<String, String>>> futures = new ArrayList<>();
 
-        for (int i = 0; i < batches.size(); i++) {
-            final int batchIndex = i;
-            final List<Map.Entry<String, String>> batch = batches.get(i);
+            for (int i = 0; i < batches.size(); i++) {
+                final int batchIndex = i;
+                final List<Map.Entry<String, String>> batch = batches.get(i);
 
-            futures.add(executor.submit(() -> {
-                return processBatch(batch, batchIndex + 1, batches.size());
-            }));
-        }
-
-        // Collect results
-        for (Future<Map<String, String>> future : futures) {
-            try {
-                Map<String, String> batchResults = future.get();
-                results.putAll(batchResults);
-                translationCache.putAll(batchResults);
-            } catch (Exception e) {
-                AutoTranslatorMod.LOGGER.error("Batch translation failed", e);
+                futures.add(executor.submit(() -> {
+                    return processBatch(batch, batchIndex + 1, batches.size());
+                }));
             }
-        }
 
-        executor.shutdown();
-        try {
-            executor.awaitTermination(5, TimeUnit.MINUTES);
-        } catch (InterruptedException e) {
-            AutoTranslatorMod.LOGGER.error("Translation service interrupted", e);
-            Thread.currentThread().interrupt();
+            // Collect results
+            for (Future<Map<String, String>> future : futures) {
+                try {
+                    Map<String, String> batchResults = future.get();
+                    results.putAll(batchResults);
+                    translationCache.putAll(batchResults);
+                } catch (Exception e) {
+                    AutoTranslatorMod.LOGGER.error("Batch translation failed", e);
+                }
+            }
+
+            executor.shutdown();
+            try {
+                executor.awaitTermination(5, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+                AutoTranslatorMod.LOGGER.error("Translation service interrupted", e);
+                Thread.currentThread().interrupt();
+            }
         }
 
         return results;
@@ -163,12 +164,21 @@ public class TranslationService {
             }
 
             // Delay between batches to avoid rate limiting
-            if (delayMs > 0 && batchNum < totalBatches) {
-                Thread.sleep(delayMs);
+            if (this.delayMs > 0 && batchNum < totalBatches) {
+                Thread.sleep(this.delayMs);
             }
 
         } catch (Exception e) {
-            AutoTranslatorMod.LOGGER.error("Failed to process batch {}/{}", batchNum, totalBatches, e);
+            // Kiểm tra nếu lỗi là do bị chặn (Rate Limit)
+            if (e.getMessage() != null && e.getMessage().contains("429")) {
+                AutoTranslatorMod.LOGGER.error("Bị Google chặn (429). Đang nghỉ 60 giây...");
+                try {
+                    Thread.sleep(60000); // Nghỉ hẳn 1 phút
+                } catch (InterruptedException ignored) {}
+            } else {
+                AutoTranslatorMod.LOGGER.error("Failed to process batch {}/{}", batchNum, totalBatches, e);
+            }
+            
             // Return original texts on error
             for (Map.Entry<String, String> entry : batch) {
                 results.put(entry.getKey(), entry.getValue());

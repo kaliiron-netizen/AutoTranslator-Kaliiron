@@ -48,7 +48,7 @@ public class ResourcePackActivator {
 
         // Add AutoTranslator pack to selected packs
         // Place it at high priority (near the beginning) so it overrides other packs
-        selectedPacks.add(0, PACK_NAME);
+        selectedPacks.addFirst(PACK_NAME);
 
         // Apply the new pack selection
         packRepository.setSelected(selectedPacks);

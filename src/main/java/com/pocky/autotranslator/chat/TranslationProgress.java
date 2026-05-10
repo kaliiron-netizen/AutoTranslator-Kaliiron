@@ -117,7 +117,7 @@ public class TranslationProgress {
      */
     public static void sendChatMessage(String message) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft != null && minecraft.player != null) {
+        if (minecraft.player != null) {
             minecraft.player.sendSystemMessage(Component.literal(message));
         }
     }

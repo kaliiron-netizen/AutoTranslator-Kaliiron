@@ -29,7 +29,8 @@ public class ModConfig {
                         "Default: 0ms. Google Translate is fast and has no rate limits for reasonable use.",
                         "Increase this value if you experience issues.",
                         "Note: Uses Google Translate API (free, unlimited, no API key required)")
-                .defineInRange("translationDelayMs", 0, 0, 5000);
+                // Adjust this value to default at 2 seconds to reduce the possibility of API blocking
+                .defineInRange("translationDelayMs", 2000, 0, 5000);
 
         BUILDER.pop();
         SPEC = BUILDER.build();

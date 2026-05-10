@@ -117,9 +117,25 @@ public class LanguageScanner {
 
                 JsonObject jsonObject = GSON.fromJson(reader, JsonObject.class);
                 if (jsonObject != null) {
-                    jsonObject.entrySet().forEach(entry ->
-                            translations.put(entry.getKey(), entry.getValue().getAsString())
-                    );
+                    jsonObject.entrySet().forEach(entry -> {
+                        com.google.gson.JsonElement element = entry.getValue();
+                        String value = null;
+                        if (element.isJsonPrimitive()) {
+                            // Standard case: "key": "value"
+                            value = element.getAsString();
+                        } else if (element.isJsonArray()) {
+                            // In case you get the error: "key": ["line1", "line2", ...]
+                            // Get the first element of the array as a representative
+                            com.google.gson.JsonArray array = element.getAsJsonArray();
+                            if (!array.isEmpty() && array.get(0).isJsonPrimitive()) {
+                                value = array.get(0).getAsString();
+                            }
+                        }
+
+                        if (value != null) {
+                            translations.put(entry.getKey(), value);
+                        }
+                    });
                 }
             }
 
